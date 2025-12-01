@@ -1,7 +1,8 @@
 import streamlit as st
 import google.generativeai as genai
 import os
-def match = re.search(pattern, text, re.DOTALL)
+
+    def match = research (pattern, text, re.DOTALL)
     if match:
         return match.group(1).strip()
     return text.strip()
