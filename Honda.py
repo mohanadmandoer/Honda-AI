@@ -67,8 +67,7 @@ if prompt := st.chat_input("اطلب مني أي حاجة يا زعيم..."):
                 response = model.generate_content(chat_prompt)
                 full_response = response.text
                 message_placeholder.markdown(full_response)
-            except Exception as e:
-                full_response = "أنا أوفلاين حالياً."
-                message_placeholder.markdown(full_response)
-                
-    st.session_state.messages.append({"role": "assistant", "content": full_response})
+       except Exception as e:
+                # التعديل هنا: اعرض رسالة الخطأ الأصلية بالكامل
+                st.error(f"⚠️ تفاصيل الخطأ: {e}")
+                message_placeholder.markdown("عندي مشكلة تقنية، بص على الرسالة الحمراء فوق.")
