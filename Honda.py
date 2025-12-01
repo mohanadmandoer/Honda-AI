@@ -191,6 +191,5 @@ if prompt := st.chat_input("اطلب المستحيل..."):
     # حفظ في الذاكرة
     if not is_dev:
         st.session_state.messages.append({"role": "assistant", "content": full_response})
-```
 
 4.  اضغط **Commit changes**.
