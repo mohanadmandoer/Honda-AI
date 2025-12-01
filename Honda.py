@@ -6,9 +6,9 @@ import os
 def clean_code_block(text):
     import re
     "pattern = r"
-    'http://googleusercontent.com/immersive_entry_chip/0',
-    'http://googleusercontent.com/immersive_entry_chip/1',
-    'http://googleusercontent.com/immersive_entry_chip/2',
+    http://googleusercontent.com/immersive_entry_chip/0'
+    http://googleusercontent.com/immersive_entry_chip/1'
+    http://googleusercontent.com/immersive_entry_chip/2'
 def get_working_model():
     """يتصل بأفضل موديل متاح (نظام المناعة ضد التوقف)"""
     try:
