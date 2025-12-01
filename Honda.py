@@ -16,53 +16,86 @@ st.markdown("""
 
 # --- العنوان ---
 st.title("🤖 هوندا - مساعدك السحابي")
-st.caption("شغال بموديل gemini-pro المستقر ✅")
 
-# --- إعداد المفاتيح ---
-try:
-    if "HONDA_API_KEY" in st.secrets:
+# --- دالة الاستكشاف الذكي (الحل السحري) ---
+def get_auto_model():
+    try:
+        if "HONDA_API_KEY" not in st.secrets:
+            st.error("⚠️ المفتاح مش موجود في Secrets!")
+            return None, "No Key"
+
         api_key = st.secrets["HONDA_API_KEY"]
         genai.configure(api_key=api_key)
-        # هنا استخدمنا الموديل المضمون عشان نمنع الأخطاء
-        model = genai.GenerativeModel('gemini-pro')
-    else:
-        st.error("⚠️ المفتاح مش موجود في Secrets!")
-except Exception as e:
-    st.error(f"مشكلة في المفتاح: {e}")
+        
+        # 1. نسأل جوجل: إيه الموديلات اللي شغالة؟
+        available_models = []
+        for m in genai.list_models():
+            if 'generateContent' in m.supported_generation_methods:
+                available_models.append(m.name)
+        
+        if not available_models:
+            st.error("❌ المفتاح سليم بس مفيش موديلات متاحة للحساب ده!")
+            return None, "No Models"
 
-# --- ذاكرة الشات ---
+        # 2. نختار الأفضل بالترتيب
+        # بنفضل الفلاش عشان سريع، لو مش موجود بناخد البرو، لو مش موجود بناخد أي حاجة
+        preferences = ['models/gemini-1.5-flash', 'models/gemini-1.5-pro', 'models/gemini-pro']
+        selected_name = available_models[0] # الافتراضي (أول واحد يلاقيه)
+        
+        for pref in preferences:
+            if pref in available_models:
+                selected_name = pref
+                break
+        
+        return genai.GenerativeModel(selected_name), selected_name
+
+    except Exception as e:
+        st.error(f"خطأ في الاتصال بجوجل: {e}")
+        return None, str(e)
+
+# --- تشغيل المخ ---
+model, model_name = get_auto_model()
+
+if model:
+    st.caption(f"✅ تم الاتصال بنجاح بالموديل: {model_name}")
+else:
+    st.caption("🔴 النظام غير متصل")
+
+# --- الذاكرة والشات ---
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# --- عرض الشات ---
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-# --- التفاعل ---
-if prompt := st.chat_input("اطلب مني أي حاجة يا زعيم..."):
+if prompt := st.chat_input("اطلب مني أي حاجة..."):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
 
     with st.chat_message("assistant"):
         message_placeholder = st.empty()
-        try:
-            # أوامر التطوير
-            if "طور نفسك" in prompt or "اكتب كود" in prompt:
-                full_response = "جاري كتابة الكود الجديد...\n"
-                ai_prompt = f"أنت خبير Streamlit. المستخدم يريد: {prompt}. اكتب كود python كامل لملف app.py."
-                response = model.generate_content(ai_prompt)
-                message_placeholder.markdown(response.text)
-                full_response = response.text
-            else:
-                # دردشة عادية
-                chat_prompt = f"أنت هوندا، مساعد مصري ذكي ومرح. المستخدم: {prompt}"
-                response = model.generate_content(chat_prompt)
-                message_placeholder.markdown(response.text)
-                full_response = response.text
-        except Exception as e:
-            st.error(f"⚠️ خطأ: {e}")
-            full_response = "حصلت مشكلة، جرب تاني."
+        
+        if not model:
+            message_placeholder.markdown("أنا عطلان حالياً.")
+        else:
+            try:
+                # أوامر التطوير
+                if "طور نفسك" in prompt or "اكتب كود" in prompt:
+                    full_response = "جاري كتابة الكود الجديد...\n"
+                    ai_prompt = f"أنت خبير Streamlit. المستخدم يريد: {prompt}. اكتب كود python كامل لملف app.py."
+                    response = model.generate_content(ai_prompt)
+                    message_placeholder.markdown(response.text)
+                    full_response = response.text
+                else:
+                    # دردشة عادية
+                    chat_prompt = f"أنت هوندا، مساعد مصري ذكي. المستخدم: {prompt}"
+                    response = model.generate_content(chat_prompt)
+                    message_placeholder.markdown(response.text)
+                    full_response = response.text
+            except Exception as e:
+                st.error(f"⚠️ خطأ أثناء الرد: {e}")
+                full_response = "حصلت مشكلة."
             
     st.session_state.messages.append({"role": "assistant", "content": full_response})
