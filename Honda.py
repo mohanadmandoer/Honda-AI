@@ -24,7 +24,7 @@ try:
     if "HONDA_API_KEY" in st.secrets:
         api_key = st.secrets["HONDA_API_KEY"]
         genai.configure(api_key=api_key)
-        model = genai.GenerativeModel('gemini-1.5-flash')
+        model = genai.GenerativeModel('gemini-1.5-flash-latest')
     else:
         st.error("⚠️ لم يتم العثور على المفتاح في Secrets. تأكد من إضافته باسم HONDA_API_KEY")
 except Exception as e:
