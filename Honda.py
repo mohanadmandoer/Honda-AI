@@ -1,26 +1,10 @@
-import streamlit as st
-import google.generativeai as genai
-import os
-import sys
+match = re.search(pattern, text, re.DOTALL)
+    if match:
+        return match.group(1).strip()
+    # لو مفيش علامات، رجع النص زي ما هو (ممكن يكون كود صافي)
+    return text.strip()
 
-# --- إعداد الصفحة ---
-st.set_page_config(page_title="Honda AI", page_icon="🤖", layout="centered")
-
-# --- التصميم ---
-st.markdown("""
-<style>
-    .stChatMessage {text-align: right; direction: rtl;}
-    p {text-align: right; direction: rtl;}
-    .stTextInput > div > div > input {text-align: right; direction: rtl;}
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-</style>
-""", unsafe_allow_html=True)
-
-# --- العنوان ---
-st.title("🤖 هوندا - مساعدك السحابي")
-
-# --- دالة المخ الذكي (المعالج الذاتي + قائمتك الخاصة) ---
+# --- دالة المخ الذكي (بالقائمة الطويلة) ---
 def get_working_model():
     try:
         # 1. التأكد من المفتاح
@@ -31,8 +15,8 @@ def get_working_model():
         api_key = st.secrets["HONDA_API_KEY"]
         genai.configure(api_key=api_key)
 
-        # 2. القائمة الشاملة (زي ما طلبت بالظبط)
-        # البرنامج هيجربهم واحد واحد، واللي يشتغل يمسك فيه
+        # 2. القائمة الشاملة (المستقبلية والحالية)
+        # القائمة دي مرتبة من الأسرع والأوفر للأثقل
         models_to_try = [
             'gemini-2.5-flash',
             'gemini-2.5-flash-latest',
@@ -46,7 +30,7 @@ def get_working_model():
             'gemini-3-flash-latest',
             'gemini-3-flash-001',
             'gemini-3-pro',
-            'gemini-1.5-flash',
+            'gemini-1.5-flash',          
             'gemini-1.5-flash-latest',
             'gemini-1.5-flash-001',
             'gemini-1.5-pro',
@@ -57,13 +41,14 @@ def get_working_model():
         ]
 
         # 3. حلقة التجربة (Loop)
+        # بيجربهم واحد واحد لحد ما يلاقي واحد شغال
         for model_name in models_to_try:
             try:
                 model = genai.GenerativeModel(model_name)
-                # اختبار سريع (بدون استهلاك رصيد)
+                # اختبار سريع (Initializing)
                 return model, model_name
             except:
-                continue # لو بايظ، خش على اللي بعده
+                continue 
         
         # لو كله فشل، رجع الفلاش الافتراضي
         return genai.GenerativeModel('gemini-1.5-flash'), 'gemini-1.5-flash (Fallback)'
@@ -75,9 +60,9 @@ def get_working_model():
 # --- تشغيل النظام ---
 model, model_name = get_working_model()
 
-# عرض حالة الاتصال (للتأكد فقط)
+# عرض حالة الاتصال
 if model:
-    st.caption(f"✅ متصل حالياً بمخ: {model_name}")
+    st.caption(f"✅ متصل بمخ: {model_name}")
 else:
     st.caption("🔴 النظام غير متصل")
 
@@ -102,73 +87,76 @@ if prompt := st.chat_input("أمرك يا زعيم..."):
         full_response = ""
         
         if not model:
-            message_placeholder.error("أنا عطلان حالياً. تأكد من المفتاح.")
+            message_placeholder.error("أنا عطلان حالياً.")
             full_response = "Error: No Model"
         else:
             try:
                 # --- القسم الخطير: التطوير الذاتي ---
-                # الكلمات اللي بتخلي هوندا يكتب كود لنفسه
-                dev_keywords = ["طور", "عدل", "ضيف", "امسح", "كود", "برنامج", "زرار", "خاصية"]
+                dev_keywords = ["طور", "عدل", "ضيف", "امسح", "كود", "برنامج", "زرار", "خاصية", "فيديو", "صورة"]
                 is_dev = any(k in prompt for k in dev_keywords)
 
                 if is_dev:
-                    message_placeholder.warning("⚙️ جاري قراءة ملفاتي وتطوير الكود... لحظة واحدة")
+                    message_placeholder.warning("⚙️ جاري قراءة الكود وتطوير النظام... (ممنوع الغلق)")
                     
-                    # 1. قراءة الكود الحالي (عشان يعرف يعدل عليه)
+                    # 1. قراءة الكود الحالي
+                    current_file = __file__
                     try:
-                        current_file = __file__
                         with open(current_file, "r", encoding="utf-8") as f:
                             old_code = f.read()
                     except:
-                        # Fallback for some cloud environments
-                        current_file = "Honda.py" 
-                        old_code = "# Error reading file"
+                        old_code = "" # لو فشل في القراءة
 
-                    # 2. أمر البرمجة الصارم (System Prompt)
+                    # 2. أمر البرمجة الصارم
                     dev_prompt = f"""
-                    ROLE: You are an expert Python Streamlit Developer.
-                    TASK: Rewrite the provided code to implement this request: "{prompt}".
+                    Act as an expert Python Streamlit Developer.
+                    TASK: Rewrite the ENTIRE current code to implement this request: "{prompt}".
                     
                     CURRENT CODE:
                     ```python
                     {old_code}
                     ```
                     
-                    RULES:
-                    1. Return ONLY the FULL VALID PYTHON CODE. No explanations, no markdown.
-                    2. YOU MUST KEEP the 'get_working_model' function and the 'models_to_try' list EXACTLY as they are.
-                    3. Ensure correct indentation.
-                    4. Do not remove 'import streamlit' or 'api_key' logic.
+                    CRITICAL RULES:
+                    1. Return the FULL VALID PYTHON CODE only.
+                    2. DO NOT include markdown backticks (```) in the start or end if possible, but if you do, I will clean it.
+                    3. KEEP the 'get_working_model' function and the 'models_to_try' list EXACTLY as they are (do not delete the future models).
+                    4. KEEP the 'clean_code_block' function.
+                    5. Ensure correct indentation.
                     """
                     
                     try:
-                        # طلب الكود الجديد من الذكاء
+                        # طلب الكود الجديد
                         response = model.generate_content(dev_prompt)
-                        new_code = response.text.replace("```python", "").replace("```", "").strip()
+                        raw_code = response.text
                         
-                        # 3. التحقق والحفظ (Overwrite)
+                        # 3. تنظيف الكود (أهم خطوة لمنع الأخطاء)
+                        new_code = clean_code_block(raw_code)
+                        
+                        # 4. التحقق والحفظ
                         if "import streamlit" in new_code and len(new_code) > 500:
+                            # الكتابة فوق الملف الحالي
                             with open(current_file, "w", encoding="utf-8") as f:
                                 f.write(new_code)
                             
-                            message_placeholder.success("✅ تم التطوير بنجاح! جاري إعادة التشغيل...")
-                            st.session_state.messages.append({"role": "assistant", "content": "تم تحديث النظام."})
-                            st.rerun() # إعادة تشغيل الموقع فوراً بالكود الجديد
+                            message_placeholder.success("✅ تم التطوير! جاري إعادة التشغيل...")
+                            st.session_state.messages.append({"role": "assistant", "content": "تم تحديث النظام بنجاح."})
+                            st.rerun() # إعادة تشغيل فورية
                         else:
-                            message_placeholder.error("فشلت عملية التطوير: الكود الناتج غير سليم.")
-                            full_response = "فشل التطوير."
+                            message_placeholder.error("فشل التطوير: الكود الناتج غير سليم.")
+                            st.code(new_code) # عرض الكود البايظ عشان نشوف المشكلة
+                            full_response = "فشل."
 
                     except Exception as e:
                         if "429" in str(e):
-                            message_placeholder.warning("⏳ ضغط عالي، جوجل بيقول استنى دقيقة.")
-                            full_response = "توقف مؤقت للراحة."
+                            message_placeholder.warning("⏳ ضغط عالي، استنى دقيقة.")
+                            full_response = "توقف مؤقت."
                         else:
                             st.error(f"خطأ برمجي: {e}")
                             full_response = "فشل."
                 
                 else:
                     # --- القسم العادي: الدردشة ---
-                    chat_prompt = f"أنت هوندا، مساعد مصري ذكي ومرح. المستخدم: {prompt}"
+                    chat_prompt = f"أنت هوندا، مساعد مصري ذكي. المستخدم: {prompt}"
                     response = model.generate_content(chat_prompt)
                     message_placeholder.markdown(response.text)
                     full_response = response.text
@@ -177,6 +165,6 @@ if prompt := st.chat_input("أمرك يا زعيم..."):
                 st.error(f"خطأ غير متوقع: {e}")
                 full_response = "Error."
             
-        # حفظ الرد (لو مكنش عملية تطوير)
+        # حفظ الرد
         if not is_dev:
             st.session_state.messages.append({"role": "assistant", "content": full_response})
