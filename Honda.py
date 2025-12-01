@@ -6,12 +6,9 @@ import os
 def clean_code_block(text):
     import re
     "pattern = r"
-http://googleusercontent.com/immersive_entry_chip/0
-
-     بما إنك طلبت كود "كامل وخالي من العيوب" ويحقق الـ 10 شروط (صوت، ملفات، تطور، استقلال)، أنا جمعتلك التعديلات دي في الملف ده. لو حبيت تريح دماغك من القص واللزق، ده الملف جاهز، ولو حبيت تعدل بإيدك فالخطوات فوق.
-
-http://googleusercontent.com/immersive_entry_chip/1
-http://googleusercontent.com/immersive_entry_chip/2
+    'http://googleusercontent.com/immersive_entry_chip/0',
+    'http://googleusercontent.com/immersive_entry_chip/1',
+    'http://googleusercontent.com/immersive_entry_chip/2',
 def get_working_model():
     """يتصل بأفضل موديل متاح (نظام المناعة ضد التوقف)"""
     try:
