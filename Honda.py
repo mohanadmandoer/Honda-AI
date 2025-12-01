@@ -1,3 +1,6 @@
+import streamlit as st
+import re
+# باقي الكود بتاعك...
 def clean_code_block(text):
     pattern = r"```python(.*?)```"
     match = re.search(pattern, text, re.DOTALL)
