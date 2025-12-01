@@ -4,8 +4,15 @@ import os
 
 # دالة التنظيف (مهمة عشان التعديل يشتغل)
 def clean_code_block(text):
+    # نستدعي مكتبة التعبيرات النمطية
     import re
-    "pattern = r"
+    # بنقوله دور على أي كلام بين علامات الكود الثلاثية
+    pattern = r"
+http://googleusercontent.com/immersive_entry_chip/0
+
+**بس كده!** بقية الكود اللي في `Honda4.py` سليم، وفيه جزء الذاكرة (`if "messages" not in st.session_state`) موجود في مكانه الصح تحت.
+
+اعمل التعديل الصغير ده واعمل **Commit**، والموقع هيشتغل معاك.
   
 def get_working_model():
     """يتصل بأفضل موديل متاح (نظام المناعة ضد التوقف)"""
