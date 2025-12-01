@@ -38,7 +38,8 @@ def get_working_model():
             'gemini-1.5-pro',
             'gemini-pro',
         ]
-
+        
+        import genai
         for model_name in models_to_try:
             try:
                 model = genai.GenerativeModel(model_name)
@@ -46,7 +47,7 @@ def get_working_model():
             except:
                 continue 
         
-        return genai.GenerativeModel('gemini-1.5-flash'), 'gemini-1.5-flash (Fallback)'
+        return genai.GenerativeModel('gemini-2.5-flash'), 'gemini-2.5-flash (Fallback)'
 
     except Exception as e:
         return None, str(e)
