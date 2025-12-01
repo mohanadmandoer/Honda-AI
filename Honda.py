@@ -3,7 +3,7 @@ match = re.search(pattern, text, re.DOTALL)
         return match.group(1).strip()
     return text.strip()
 
-# --- دالة المخ الذكي (بالقائمة الطويلة) ---
+# --- دالة المخ الذكي ---
 def get_working_model():
     try:
         if "HONDA_API_KEY" not in st.secrets:
@@ -34,20 +34,16 @@ def get_working_model():
             'gemini-pro',
         ]
 
-        # تجربة الموديلات واحد تلو الآخر
         for model_name in models_to_try:
             try:
                 model = genai.GenerativeModel(model_name)
-                # اختبار سريع
                 return model, model_name
             except:
                 continue 
         
-        # لو كله فشل، رجع الفلاش الافتراضي
         return genai.GenerativeModel('gemini-1.5-flash'), 'gemini-1.5-flash (Fallback)'
 
     except Exception as e:
-        st.error(f"خطأ اتصال: {e}")
         return None, str(e)
 
 # --- تشغيل النظام ---
@@ -58,7 +54,7 @@ if model:
 else:
     st.caption("🔴 النظام غير متصل")
 
-# --- الذاكرة والشات ---
+# --- الذاكرة ---
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
@@ -66,7 +62,7 @@ for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-# --- التفاعل والأوامر ---
+# --- التفاعل ---
 if prompt := st.chat_input("أمرك يا زعيم..."):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
@@ -81,22 +77,20 @@ if prompt := st.chat_input("أمرك يا زعيم..."):
             full_response = "Error."
         else:
             try:
-                # --- نظام التطوير الذاتي (Self-Evolution) ---
+                # --- نظام التطوير الذاتي ---
                 dev_keywords = ["طور", "عدل", "ضيف", "امسح", "كود", "برنامج", "زرار", "خاصية"]
                 is_dev = any(k in prompt for k in dev_keywords)
 
                 if is_dev:
-                    message_placeholder.warning("⚙️ جاري تطوير النظام ذاتياً... (لا تغلق الصفحة)")
+                    message_placeholder.warning("⚙️ جاري التطوير الذاتي... (لحظة واحدة)")
                     
-                    # 1. قراءة الكود الحالي
-                    current_file = __file__
                     try:
+                        current_file = __file__
                         with open(current_file, "r", encoding="utf-8") as f:
                             old_code = f.read()
                     except:
                         old_code = ""
 
-                    # 2. الأمر الصارم للمطور
                     dev_prompt = f"""
                     Act as an expert Python Streamlit Developer.
                     TASK: Rewrite the ENTIRE current code to implement this request: "{prompt}".
@@ -108,38 +102,28 @@ if prompt := st.chat_input("أمرك يا زعيم..."):
                     
                     CRITICAL RULES:
                     1. Return the FULL VALID PYTHON CODE only.
-                    2. DO NOT include markdown backticks (```) if possible.
-                    3. KEEP 'get_working_model' and 'models_to_try' list EXACTLY as is.
-                    4. KEEP 'clean_code_block' function.
-                    5. Ensure correct indentation (4 spaces).
+                    2. KEEP 'get_working_model' and 'models_to_try' list EXACTLY as is.
+                    3. KEEP 'clean_code_block' function.
+                    4. Ensure correct indentation (4 spaces).
                     """
                     
                     try:
                         response = model.generate_content(dev_prompt)
-                        raw_code = response.text
+                        new_code = clean_code_block(response.text)
                         
-                        # 3. تنظيف الكود الجديد
-                        new_code = clean_code_block(raw_code)
-                        
-                        # 4. الحفظ وإعادة التشغيل
                         if "import streamlit" in new_code and len(new_code) > 500:
                             with open(current_file, "w", encoding="utf-8") as f:
                                 f.write(new_code)
                             
                             message_placeholder.success("✅ تم التطوير! جاري إعادة التشغيل...")
-                            st.session_state.messages.append({"role": "assistant", "content": "تم تحديث النظام."})
                             st.rerun()
                         else:
                             message_placeholder.error("فشل التطوير: الكود الناتج غير سليم.")
                             full_response = "فشل."
 
                     except Exception as e:
-                        if "429" in str(e):
-                            message_placeholder.warning("⏳ ضغط عالي، استنى دقيقة.")
-                            full_response = "توقف مؤقت."
-                        else:
-                            st.error(f"خطأ برمجي: {e}")
-                            full_response = "فشل."
+                        st.error(f"خطأ برمجي: {e}")
+                        full_response = "فشل."
                 
                 else:
                     # --- الشات العادي ---
