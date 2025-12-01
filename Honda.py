@@ -10,7 +10,7 @@ def clean_code_block(text):
     pattern = r
     www.googleusercontent.com
 
-بس كده! بقية الكود اللي في Honda4.py سليم وفيه جزء الذاكرة (if "messages" not in st.session_state) موجود في مكانه الصح تحت
+بس كده بقية الكود اللي في Honda.py سليم وفيه جزء الذاكرة (if "messages" not in st.session_state) موجود في مكانه الصح تحت
 
 اعمل التعديل الصغير ده واعمل Commit والموقع هيشتغل معاك
   
