@@ -7,7 +7,7 @@ def clean_code_block(text):
     # نستدعي مكتبة التعبيرات النمطية
     import re
     # بنقوله دور على أي كلام بين علامات الكود الثلاثية
-    *pattern = r"
+    pattern = r
 http://googleusercontent.com/immersive_entry_chip/0
 
 **بس كده!** بقية الكود اللي في `Honda4.py` سليم، وفيه جزء الذاكرة (`if "messages" not in st.session_state`) موجود في مكانه الصح تحت.
