@@ -1,1 +1,7 @@
-google-generativeai>=0.7.0
+    ```text
+    google-generativeai>=0.7.0
+    streamlit
+    matplotlib
+    pandas
+    numpy
+    fpdf
