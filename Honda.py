@@ -1,5 +1,5 @@
 match = re.search(pattern, text, re.DOTALL)
-    if match:
+    if:
         return match.group(1).strip()
     return text.strip()
 
