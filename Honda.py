@@ -1,6 +1,6 @@
 match = re.search(pattern, text, re.DOTALL)
- if match: 
-    return match.group(1).strip()
+    if match:
+        return match.group(1).strip()
     return text.strip()
 
 # --- دالة المخ الذكي (بالقائمة الطويلة) ---
@@ -13,33 +13,37 @@ def get_working_model():
         api_key = st.secrets["HONDA_API_KEY"]
         genai.configure(api_key=api_key)
 
-        # القائمة الشاملة (الحالية والمستقبلية)
+        # القائمة الشاملة (زي ما طلبت بالظبط)
         models_to_try = [
-            'gemini-2.5-flash', 
-            'gemini-2.5-flash-latest',
-            'gemini-2.5-pro', 
-            'gemini-2.5-pro-exp',
-            'gemini-2-flash', 
-            'gemini-2-pro',
-            'gemini-3-flash', 
-            'gemini-3-pro',
-            'gemini-1.5-flash',          # الأسرع
+            'models/gemini-2.5-flash',
+            'models/gemini-2.5-flash-latest',
+            'models/gemini-2.5-flash-001',
+            'models/gemini-2.5-pro',
+            'models/gemini-2-flash',
+            'models/gemini-2-flash-latest',
+            'models/gemini-2-flash-001',
+            'models/gemini-2-pro',
+            'models/gemini-3-flash',
+            'models/gemini-3-flash-latest',
+            'models/gemini-3-flash-001',
+            'models/gemini-3-pro',
+            'gemini-1.5-flash',
             'gemini-1.5-flash-latest',
             'gemini-1.5-flash-001',
             'gemini-1.5-pro',
             'gemini-pro',
-            # احتياطي
-            'models/gemini-1.5-flash', 'models/gemini-pro'
         ]
 
-        # تجربة الموديلات
+        # تجربة الموديلات واحد تلو الآخر
         for model_name in models_to_try:
             try:
                 model = genai.GenerativeModel(model_name)
+                # اختبار سريع
                 return model, model_name
             except:
                 continue 
         
+        # لو كله فشل، رجع الفلاش الافتراضي
         return genai.GenerativeModel('gemini-1.5-flash'), 'gemini-1.5-flash (Fallback)'
 
     except Exception as e:
