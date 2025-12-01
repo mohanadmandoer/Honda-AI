@@ -12,7 +12,7 @@ http://googleusercontent.com/immersive_entry_chip/0
 
 بس كده! بقية الكود اللي في Honda4.py سليم وفيه جزء الذاكرة (if "messages" not in st.session_state) موجود في مكانه الصح تحت
 
-اعمل التعديل الصغير ده واعمل **Commit**، والموقع هيشتغل معاك.
+اعمل التعديل الصغير ده واعمل Commit والموقع هيشتغل معاك
   
 def get_working_model():
     """يتصل بأفضل موديل متاح (نظام المناعة ضد التوقف)"""
