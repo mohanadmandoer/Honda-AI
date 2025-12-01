@@ -1,18 +1,18 @@
 import streamlit as st
 import google.generativeai as genai
-import os
+import os$
 
-# --- دالة المخ الذكي (بالقائمة الطويلة) ---
 def get_working_model():
+    """يتصل بأفضل موديل متاح (نظام المناعة ضد التوقف)"""
     try:
         if "HONDA_API_KEY" not in st.secrets:
-            st.error("⚠️ المفتاح مش موجود في Secrets!")
+            st.error("⚠️ مفتاح التشغيل غير موجود في Secrets!")
             return None, "No Key"
 
         api_key = st.secrets["HONDA_API_KEY"]
         genai.configure(api_key=api_key)
 
-        # القائمة الشاملة (الحالية والمستقبلية)
+        # قائمة الموديلات الشاملة (الحاضر والمستقبل)
         models_to_try = [
             'gemini-2.5-flash',
             'gemini-2.5-flash-latest',
@@ -25,120 +25,187 @@ def get_working_model():
             'gemini-3-flash-latest',
             'gemini-3-pro',
             'gemini-pro',
-            'models/gemini-1.5-flash', 'models/gemini-pro'
+            'models/gemini-1.5-flash', 'models/gemini-pro'$0
         ]
 
-        # تجربة الموديلات
         for model_name in models_to_try:
             try:
                 model = genai.GenerativeModel(model_name)
-                # اختبار سريع
                 return model, model_name
             except:
                 continue 
         
-        return genai.GenerativeModel('gemini-1.5-flash'), 'gemini-1.5-flash (Fallback)'
+        return genai.GenerativeModel('gemini-1.5-flash'), 'Fallback'
 
     except Exception as e:
-        st.error(f"خطأ اتصال: {e}")
+        st.error(f"خطأ في الاتصال: {e}")
         return None, str(e)
 
-# --- تشغيل النظام ---
+# ================= واجهة المستخدم =================
+
+st.title("🤖 هوندا - الذكاء الاصطناعي المتطور")
+st.caption("أنا أطور نفسي، أصنع الملفات، وأتحكم في مظهري.")
+
+# --- الشريط الجانبي (للأدوات) ---
+with st.sidebar:
+    st.header("📂 إدارة الملفات")
+    uploaded_file = st.file_uploader("اعطني ملفاً لأفحصه (صور، نصوص، كود)")
+    
+    if st.button("🗑️ مسح الذاكرة"):
+        st.session_state.messages = []
+        st.rerun()
+
+# --- تشغيل المخ ---
 model, model_name = get_working_model()
+if not model:
+    st.error("❌ النظام متوقف. تأكد من المفتاح.")
+    st.stop()
 
-if model:
-    st.caption(f"✅ متصل بمخ: {model_name}")
-else:
-    st.caption("🔴 النظام غير متصل")
-
-# --- الذاكرة والشات ---
-if "messages" not in st.session_state:
-    st.session_state.messages = []
-
+# --- عرض الشات ---
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
+        # لو فيه ملفات تم إنشاؤها، نعرضها هنا (مستقبلاً)
 
-# --- التفاعل والأوامر ---
-if prompt := st.chat_input("أمرك يا زعيم..."):
+# ================= معالجة الأوامر (قلب هوندا) =================
+
+if prompt := st.chat_input("اطلب المستحيل..."):
+    # 1. عرض طلب المستخدم
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
 
+    # 2. تفكير هوندا وتنفيذ الأوامر
     with st.chat_message("assistant"):
         message_placeholder = st.empty()
         full_response = ""
         
-        if not model:
-            message_placeholder.error("أنا عطلان حالياً.")
-            full_response = "Error."
-        else:
-            try:
-                # --- نظام التطوير الذاتي ---
-                dev_keywords = ["طور", "عدل", "ضيف", "امسح", "كود", "برنامج", "زرار", "خاصية"]
-                is_dev = any(k in prompt for k in dev_keywords)
+        try:
+            # --- أ) فحص هل يوجد ملف مرفق؟ ---
+            file_context = ""
+            if uploaded_file:
+                try:
+                    # قراءة محتوى الملف (نصي)
+                    stringio = uploaded_file.getvalue().decode("utf-8")
+                    file_context = f"\n\n[USER UPLOADED FILE CONTENT]:\n{stringio}\n"
+                    st.toast("تم قراءة الملف بنجاح! 📂")
+                except:
+                    file_context = "\n[USER UPLOADED A BINARY FILE - I CAN SEE IT BUT NOT READ TEXT DIRECTLY YET]\n"
 
-                if is_dev:
-                    message_placeholder.warning("⚙️ جاري التطوير الذاتي... (لحظة واحدة)")
-                    
-                    current_file = __file__
-                    try:
-                        with open(current_file, "r", encoding="utf-8") as f:
-                            old_code = f.read()
-                    except:
-                        old_code = ""
+            # --- ب) هل هذا طلب تطوير ذاتي؟ (Evolve) ---
+            dev_keywords = ["طور نفسك", "عدل الكود", "غير لون", "غير الخلفية", "ضيف خاصية"]
+            is_dev = any(k in prompt for k in dev_keywords)
 
-                    dev_prompt = f"""
-                    Act as an expert Python Streamlit Developer.
-                    TASK: Rewrite the ENTIRE current code to implement this request: "{prompt}".
-                    
-                    CURRENT CODE:
-                    ```python
-                    {old_code}
-                    ```
-                    
-                    CRITICAL RULES:
-                    1. Return the FULL VALID PYTHON CODE only.
-                    2. DO NOT include markdown backticks (```) if possible.
-                    3. KEEP 'get_working_model' and 'models_to_try' list EXACTLY as is.
-                    4. KEEP 'clean_code_block' function.
-                    5. Ensure correct indentation.
-                    """
-                    
-                    try:
-                        response = model.generate_content(dev_prompt)
-                        raw_code = response.text
-                        # هنا بنستخدم الدالة اللي كانت ناقصة وصلحناها
-                        new_code = clean_code_block(raw_code)
-                        
-                        if "import streamlit" in new_code and len(new_code) > 500:
-                            with open(current_file, "w", encoding="utf-8") as f:
-                                f.write(new_code)
-                            
-                            message_placeholder.success("✅ تم التطوير! جاري إعادة التشغيل...")
-                            st.rerun()
-                        else:
-                            message_placeholder.error("فشل التطوير: الكود الناتج غير سليم.")
-                            full_response = "فشل."
+            # --- ج) هل هذا طلب إنشاء ملفات؟ (Generate) ---
+            gen_keywords = ["اعمل ملف", "اكتب ملف", "انشيء", "اصنع", "pdf", "صورة", "كود"]
+            is_gen = any(k in prompt for k in gen_keywords)
 
-                    except Exception as e:
-                        if "429" in str(e):
-                            message_placeholder.warning("⏳ ضغط عالي، استنى دقيقة.")
-                            full_response = "توقف مؤقت."
-                        else:
-                            st.error(f"خطأ برمجي: {e}")
-                            full_response = "فشل."
+            if is_dev:
+                message_placeholder.warning("⚙️ جاري الدخول لوضع المطور... سأقوم بتعديل الكود وإعادة التشغيل.")
                 
-                else:
-                    # --- الشات العادي ---
-                    chat_prompt = f"أنت هوندا، مساعد مصري ذكي. المستخدم: {prompt}"
-                    response = model.generate_content(chat_prompt)
-                    message_placeholder.markdown(response.text)
-                    full_response = response.text
+                # قراءة الكود الحالي
+                current_file = __file__
+                with open(current_file, "r", encoding="utf-8") as f:
+                    old_code = f.read()
 
-            except Exception as e:
-                st.error(f"خطأ غير متوقع: {e}")
-                full_response = "Error."
-            
-        if not is_dev:
-            st.session_state.messages.append({"role": "assistant", "content": full_response})
+                dev_prompt = f"""
+                Act as an expert Streamlit Python Developer (Honda).
+                User Request: "{prompt}"
+                
+                Current Code:
+                ```python
+                {old_code}
+                ```
+                
+                MISSION: Rewrite the FULL code to implement the request.
+                RULES:
+                1. If user asks to change color, modify 'st.session_state.ui_color' or CSS.
+                2. If user asks to add features, add standard Streamlit widgets.
+                3. KEEP 'get_working_model' and 'clean_code_block' functions intact.
+                4. Return ONLY valid Python code.
+                """
+                
+                response = model.generate_content(dev_prompt)
+                new_code = clean_code_block(response.text)
+                
+                # الحفظ والتطبيق
+                if "import streamlit" in new_code and len(new_code) > 500:
+                    with open(current_file, "w", encoding="utf-8") as f:
+                        f.write(new_code)
+                    message_placeholder.success("✅ تم التحديث! إعادة تشغيل النظام...")
+                    time.sleep(1)
+                    st.rerun()
+                else:
+                    message_placeholder.error("فشل التطوير: الكود الناتج غير مكتمل.")
+
+            elif is_gen:
+                message_placeholder.info("🔨 جاري العمل على إنشاء الملفات المطلوبة...")
+                
+                # هنا نطلب من هوندا كتابة كود بايثون يصنع الملف (PDF, Image, etc)
+                gen_prompt = f"""
+                Act as a Python Coding Assistant.
+                User wants to create a file/program based on: "{prompt}"
+                
+                Write a COMPLETE Python script that uses standard libraries (like fpdf for pdf, matplotlib for images, etc.) to generate this file.
+                The script should save the result to a file (e.g., output.txt, output.png).
+                Use Streamlit to display/download the result if possible.
+                
+                Output ONLY the Python code to generate this.
+                """
+                
+                response = model.generate_content(gen_prompt)
+                code_to_run = clean_code_block(response.text)
+                
+                # عرض الكود للمستخدم (لأننا على السحابة، التشغيل المباشر للملفات الثقيلة مقيد، فالأفضل نعرض الكود)
+                message_placeholder.markdown("لقد قمت بكتابة البرنامج الذي يصنع هذا الملف. يمكنك نسخه وتشغيله، أو سأحاول تنفيذه الآن:")
+                st.code(code_to_run, language='python')
+                
+                # محاولة تنفيذ الكود (Sandbox execution - dangerous but requested)
+                # ملاحظة: في بيئة Streamlit Cloud، الكتابة على الديسك محدودة
+                # سنقوم بمحاولة بسيطة للتنفيذ
+                try:
+                    exec(code_to_run)
+                    st.success("تم تنفيذ الكود! (تحقق من النتيجة إذا كانت واجهة)")
+                except Exception as e:
+                    st.warning(f"كتبت الكود لكن لم أستطع تشغيله بالكامل هنا: {e}")
+                
+                full_response = "تمت المعالجة."
+
+            else:
+                # --- د) دردشة عادية وتحليل ملفات ---
+                chat_prompt = f"""
+                أنت 'هوندا'، مساعد ذكي ومحترف ومبرمج.
+                تتحدث باللهجة المصرية الودودة.
+                سياق الملف المرفق (إن وجد): {file_context}
+                
+                سؤال المستخدم: {prompt}
+                """
+                response = model.generate_content(chat_prompt)
+                full_response = response.text
+                message_placeholder.markdown(full_response)
+
+        except Exception as e:
+            st.error(f"حدث خطأ غير متوقع: {e}")
+            full_response = "حدث خطأ."
+
+    # حفظ في الذاكرة
+    if not is_dev:
+        st.session_state.messages.append({"role": "assistant", "content": full_response})
+```
+
+4.  اضغط **Commit changes**.
+
+---
+
+### 📦 خطوة إضافية (عشان قدرات صناعة الملفات)
+عشان يقدر يعمل ملفات PDF وصور ورسومات، لازم نضيف المكتبات دي في ملف `requirements.txt`:
+
+1.  روح لملف **`requirements.txt`**.
+2.  امسح اللي فيه واكتب دول:
+    ```text
+    google-generativeai>=0.7.0
+    streamlit
+    matplotlib
+    pandas
+    numpy
+    fpdf
