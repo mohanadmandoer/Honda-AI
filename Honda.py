@@ -1,6 +1,6 @@
 import streamlit as st
 import google.generativeai as genai
-import os$
+import os
 
 def get_working_model():
     """يتصل بأفضل موديل متاح (نظام المناعة ضد التوقف)"""
