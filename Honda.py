@@ -1,6 +1,6 @@
 match = re.search(pattern, text, re.DOTALL)
-if match: 
-return match.group(1).strip()
+ if match: 
+    return match.group(1).strip()
     return text.strip()
 
 # --- دالة المخ الذكي (بالقائمة الطويلة) ---
