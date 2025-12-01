@@ -1,9 +1,13 @@
+import streamlit as st
+import google.generativeai as genai
+import os
+
 match = re.search(pattern, text, re.DOTALL)
     if match:
         return match.group(1).strip()
     return text.strip()
 
-# --- دالة المخ الذكي (بالقائمة الكاملة) ---
+# --- دالة المخ الذكي (بالقائمة الطويلة) ---
 def get_working_model():
     try:
         if "HONDA_API_KEY" not in st.secrets:
@@ -13,19 +17,21 @@ def get_working_model():
         api_key = st.secrets["HONDA_API_KEY"]
         genai.configure(api_key=api_key)
 
-        # القائمة الشاملة (الحالية والمستقبلية)
+        # القائمة الشاملة (زي ما طلبت)
         models_to_try = [
-            'gemini-1.5-flash',          # الأسرع والأضمن
+            'gemini-2.5-flash', 'gemini-2.5-flash-latest',
+            'gemini-2.5-flash-001', 'gemini-2.5-pro',
+            'gemini-2.0-flash', 'gemini-2.0-flash-exp',
+            'gemini-3.0-flash', 'gemini-3.0-pro',
+            'gemini-1.5-flash',
             'gemini-1.5-flash-latest',
             'gemini-1.5-pro',
             'gemini-pro',
-            # موديلات المستقبل
-            'gemini-2.5-flash', 'gemini-2.5-flash-latest',
-            'gemini-2.5-pro', 'gemini-2.0-flash',
-            'models/gemini-1.5-flash', 'models/gemini-pro'
+            # صيغ أخرى
+            'models/gemini-1.5-flash',
+            'models/gemini-pro'
         ]
 
-        # تجربة الموديلات
         for model_name in models_to_try:
             try:
                 model = genai.GenerativeModel(model_name)
@@ -56,7 +62,7 @@ for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-# --- التفاعل والأوامر ---
+# --- التفاعل ---
 if prompt := st.chat_input("أمرك يا زعيم..."):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
@@ -85,7 +91,6 @@ if prompt := st.chat_input("أمرك يا زعيم..."):
                     except:
                         old_code = ""
 
-                    # الأمر الصارم للمطور
                     dev_prompt = f"""
                     Act as an expert Python Streamlit Developer.
                     TASK: Rewrite the ENTIRE current code to implement this request: "{prompt}".
