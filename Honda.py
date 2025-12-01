@@ -10,8 +10,6 @@ def clean_code_block(text):
     pattern = r
     www.googleusercontent.com
 
-"(if messages not in st session_state)
-
 اعمل التعديل الصغير ده واعمل Commit والموقع هيشتغل معاك
   
 def get_working_model():
