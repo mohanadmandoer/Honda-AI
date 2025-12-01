@@ -25,7 +25,7 @@ def get_working_model():
             'gemini-3-flash-latest',
             'gemini-3-pro',
             'gemini-pro',
-            'models/gemini-1.5-flash', 'models/gemini-pro'$0
+            'models/gemini-1.5-flash', 'models/gemini-pro'
         ]
 
         for model_name in models_to_try:
