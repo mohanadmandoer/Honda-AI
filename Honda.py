@@ -69,6 +69,7 @@ for message in st.session_state.messages:
 
 # --- التفاعل ---
 if prompt := st.chat_input("أمرك يا زعيم..."):
+    is_dev = False
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
