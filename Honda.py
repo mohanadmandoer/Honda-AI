@@ -8,7 +8,7 @@ def clean_code_block(text):
     import re
     # بنقوله دور على أي كلام بين علامات الكود الثلاثية
     pattern = r
-http://googleusercontent.com/immersive_entry_chip
+    *http://googleusercontent.com/immersive_entry_chip
 
 بس كده! بقية الكود اللي في Honda4.py سليم وفيه جزء الذاكرة (if "messages" not in st.session_state) موجود في مكانه الصح تحت
 
