@@ -9,8 +9,6 @@ def clean_code_block(text):
     # بنقوله دور على أي كلام بين علامات الكود الثلاثية
     pattern = r
     www.googleusercontent.com
-
-اعمل التعديل الصغير ده واعمل Commit والموقع هيشتغل معاك
   
 def get_working_model():
     """يتصل بأفضل موديل متاح (نظام المناعة ضد التوقف)"""
