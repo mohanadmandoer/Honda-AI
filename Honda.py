@@ -16,63 +16,53 @@ st.markdown("""
 
 # --- العنوان ---
 st.title("🤖 هوندا - مساعدك السحابي")
-st.caption("موجود معاك على كل الأجهزة، مربوط بذكاء Gemini")
+st.caption("شغال بموديل gemini-pro المستقر ✅")
 
 # --- إعداد المفاتيح ---
 try:
-    # محاولة جلب المفتاح من أسرار الموقع
     if "HONDA_API_KEY" in st.secrets:
         api_key = st.secrets["HONDA_API_KEY"]
         genai.configure(api_key=api_key)
-        model = genai.GenerativeModel('gemini-1.5-flash-latest')
+        # هنا استخدمنا الموديل المضمون عشان نمنع الأخطاء
+        model = genai.GenerativeModel('gemini-pro')
     else:
-        st.error("⚠️ لم يتم العثور على المفتاح في Secrets. تأكد من إضافته باسم HONDA_API_KEY")
+        st.error("⚠️ المفتاح مش موجود في Secrets!")
 except Exception as e:
-    st.error(f"مشكلة في إعداد المفتاح: {e}")
+    st.error(f"مشكلة في المفتاح: {e}")
 
 # --- ذاكرة الشات ---
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# --- عرض الشات القديم ---
+# --- عرض الشات ---
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
 # --- التفاعل ---
 if prompt := st.chat_input("اطلب مني أي حاجة يا زعيم..."):
-    # عرض رسالة المستخدم
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
 
-    # تفكير هوندا
     with st.chat_message("assistant"):
         message_placeholder = st.empty()
-        
-        # الأوامر الخاصة (التطوير الذاتي)
-        if "طور نفسك" in prompt or "اكتب كود" in prompt:
-            full_response = "جاري كتابة الكود الجديد لتطوير الموقع...\n"
-            ai_prompt = f"أنت خبير Streamlit. المستخدم يريد: {prompt}. اكتب كود python كامل لملف app.py يحقق هذا."
-            try:
+        try:
+            # أوامر التطوير
+            if "طور نفسك" in prompt or "اكتب كود" in prompt:
+                full_response = "جاري كتابة الكود الجديد...\n"
+                ai_prompt = f"أنت خبير Streamlit. المستخدم يريد: {prompt}. اكتب كود python كامل لملف app.py."
                 response = model.generate_content(ai_prompt)
-                ai_text = response.text
-                full_response += ai_text
-                message_placeholder.markdown(full_response)
-            except Exception as e:
-                st.error(f"خطأ في التطوير: {e}")
-                message_placeholder.markdown("عقلي مشغول دلوقتي.")
-        else:
-            # دردشة عادية
-            try:
-                chat_prompt = f"أنت هوندا، مساعد شخصي مصري. المستخدم: {prompt}"
-                response = model.generate_content(chat_prompt)
+                message_placeholder.markdown(response.text)
                 full_response = response.text
-                message_placeholder.markdown(full_response)
-            except Exception as e:
-                # كشف الخطأ الحقيقي هنا
-                st.error(f"⚠️ تفاصيل الخطأ: {e}")
-                full_response = "عندي مشكلة تقنية، بص على الرسالة الحمراء فوق."
-                message_placeholder.markdown(full_response)
-                
+            else:
+                # دردشة عادية
+                chat_prompt = f"أنت هوندا، مساعد مصري ذكي ومرح. المستخدم: {prompt}"
+                response = model.generate_content(chat_prompt)
+                message_placeholder.markdown(response.text)
+                full_response = response.text
+        except Exception as e:
+            st.error(f"⚠️ خطأ: {e}")
+            full_response = "حصلت مشكلة، جرب تاني."
+            
     st.session_state.messages.append({"role": "assistant", "content": full_response})
